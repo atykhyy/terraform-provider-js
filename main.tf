@@ -1,16 +1,20 @@
 terraform {
   required_providers {
-    go = {
-      source  = "terraform.local/local/go"
+    js = {
+      source  = "terraform.local/local/js"
       version = "0.0.1"
     }
   }
 }
 
-provider "go" {
-  go = file("./fixtures/lib.go")
+provider "js" {
+  js = <<-EOT
+    function Hello(s) {
+      return `Hello, $${s} !`
+    }
+  EOT
 }
 
 output "test" {
-  value = provider::go::hello("papaya")
+  value = provider::js::hello("papaya")
 }

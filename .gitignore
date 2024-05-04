@@ -1,4 +1,6 @@
+*.exe
 *.swp
+*.user
 .terraform*
 terraform*
 !terraform-registry-manifest.json
