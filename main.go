@@ -25,6 +25,8 @@ var (
 			Type: tftypes.DynamicPseudoType,
 		},
 	}
+
+	tftypesNull = tftypes.NewValue(tftypes.String, nil)
 )
 
 type FunctionProvider struct {
@@ -73,36 +75,31 @@ func (f *FunctionProvider) configureCore(config *tfprotov6.DynamicValue) (err er
 }
 
 func (f *FunctionProvider) callFunctionCore(fn string, args []*tfprotov6.DynamicValue) (*tfprotov6.DynamicValue, error) {
-	// quick-and-dirty marshaling using cty and raw json
-	var sb strings.Builder
-	sb.WriteString("JSON.stringify(")
-	sb.WriteString(f.names[fn])
-	sep := "("
-	for i, arg := range args {
-		val, err := protoToJson(arg)
-		if err != nil {
-			return nil, fmt.Errorf("Error marshaling argument #%d: %w", i, err)
-		}
-		sb.WriteString(sep)
-		sb.WriteString(string(val))
-		sep = ","
-	}
-	sb.WriteString("))")
 	js := goja.New()
 	js.RunProgram(f.prog)
 
-	res, err := js.RunString(sb.String())
-	if err != nil {
-		return nil, fmt.Errorf("Error running script: %w", err)
+	gargs := make([]goja.Value, len(args))
+	for i, arg := range args {
+		if gv, err := tfdynamicToGoja(js, arg); err != nil {
+			return nil, fmt.Errorf("Error marshaling argument #%d: %w", i, err)
+		} else {
+			gargs[i] = gv
+		}
 	}
-	if goja.IsUndefined(res) {
+
+	if jsfn, ok := f.names[fn]; !ok {
+		return nil, fmt.Errorf("Unknown function %s", fn)
+	} else if callable, ok := goja.AssertFunction(js.GlobalObject().Get(jsfn)); !ok {
+		return nil, fmt.Errorf("Unknown function %s", fn) // should never happen by construction
+	} else if gv, err := callable(goja.Undefined(), gargs...); err != nil {
+		return nil, fmt.Errorf("Error calling %s(): %w", fn, err)
+	} else if goja.IsUndefined(gv) {
 		return nil, fmt.Errorf("Result is undefined (probably there was an error)")
+	} else if dv, err := gojaToTfdynamic(js, gv); err != nil {
+		return nil, fmt.Errorf("Error unmarshaling result: %w", err)
+	} else {
+		return dv, nil
 	}
-	ret, err := jsonToProto(res.String())
-	if err != nil {
-		return nil, fmt.Errorf("Error unmarshaling result %s: %w", res.String(), err)
-	}
-	return ret, nil
 }
 
 // -----------------------------
