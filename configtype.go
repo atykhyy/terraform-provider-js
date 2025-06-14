@@ -39,6 +39,7 @@ func configTypeToSchemaAttributes[T any]() (result []*tfprotov6.SchemaAttribute)
 				Name:     parts[0],
 				Type:     goTypeKindToTfprotoType[f.Type.Kind()],
 				Required: slices.Contains(parts[1:], "required"),
+				Optional: slices.Contains(parts[1:], "optional"),
 			})
 		}
 	}

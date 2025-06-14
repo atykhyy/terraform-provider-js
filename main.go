@@ -46,7 +46,7 @@ func createFunctionProvider(providerSchema *tfprotov6.Schema) *FunctionProvider 
 
 type providerConfig struct {
 	Script string `tf:"js,required"`
-	Strict bool   `tf:"strict"`
+	Strict bool   `tf:"strict,optional"`
 }
 
 func (f *FunctionProvider) configureCore(config *tfprotov6.DynamicValue) (err error, summary string) {
