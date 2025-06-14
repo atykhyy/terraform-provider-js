@@ -47,7 +47,7 @@ func tfToGoja(r *goja.Runtime, v tftypes.Value) goja.Value {
 		v.As(&tm)
 		gm := r.NewObject()
 		for k, tv := range tm {
-			gm.DefineDataProperty(k, tfToGoja(r, tv), goja.FLAG_FALSE, goja.FLAG_FALSE, goja.FLAG_TRUE)
+			gm.DefineDataProperty(k, tfToGoja(r, tv), goja.FLAG_TRUE, goja.FLAG_TRUE, goja.FLAG_TRUE)
 		}
 		return gm
 	}

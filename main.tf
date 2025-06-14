@@ -8,13 +8,13 @@ terraform {
 }
 
 provider "js" {
-  js = <<-EOT
-    function Hello(s) {
-      return `Hello, $${s} !`
+  js = <<-js
+    function Hello(s,x) {
+      return {"a": `Hello, $${x} $${s[0]}!`, "b": [{"c":"1","d":3},{"d":[]},{"r":null},null]}
     }
-  EOT
+  js
 }
 
 output "test" {
-  value = provider::js::hello("papaya")
+  value = provider::js::hello([null,"turd"], "a")
 }

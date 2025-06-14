@@ -41,7 +41,7 @@ terraform {
   required_providers {
     go = {
       source  = "registry.opentofu.org/atykhyy/js"
-      version = "0.0.1"
+      version = "0.0.3"
     }
   }
 }
