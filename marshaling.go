@@ -31,9 +31,7 @@ func tfToGoja(r *goja.Runtime, v tftypes.Value) goja.Value {
 		return r.ToValue(f)
 	}
 	switch t.(type) {
-	case tftypes.List:
-	case tftypes.Set:
-	case tftypes.Tuple:
+	case tftypes.List, tftypes.Set, tftypes.Tuple:
 		var tl []tftypes.Value
 		v.As(&tl)
 		gl := make([]any, len(tl))
@@ -41,8 +39,7 @@ func tfToGoja(r *goja.Runtime, v tftypes.Value) goja.Value {
 			gl[i] = tfToGoja(r, tv)
 		}
 		return r.NewArray(gl...)
-	case tftypes.Map:
-	case tftypes.Object:
+	case tftypes.Map, tftypes.Object:
 		var tm map[string]tftypes.Value
 		v.As(&tm)
 		gm := r.NewObject()
